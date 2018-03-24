@@ -1,4 +1,6 @@
 var gulp = require('gulp');
+var htmlmin = require('gulp-htmlmin');
+var htmlhint = require("gulp-htmlhint");
 var sass = require('gulp-sass');
 var autoprefixer = require('gulp-autoprefixer');
 var strip_css_comments = require('gulp-strip-css-comments');
@@ -32,43 +34,31 @@ var paths = {
     src: 'resources/ezz/img/**/*.{jpg,jpeg,png}'
   },
   //paths.lib.src.scripts.min
-  lib: {
+  lib1: {
     src: {
       styles: {
-        css: 'resources/lib/css/**/*.css',
-        min: 'resources/lib/css/*.min.css',
-        scss:'resources/lib/scss/**/*.scss'
+        css: 'resources/lib1/css/**/*.css',
+        min: 'resources/lib1/css/**/*.min.css',
       },
       scripts: {
-        js:     'resources/lib/js/*.js',
-        min:    'resources/lib/js/*.min.js',
-        min_lib:'resources/lib/js/lib.min.js'
+        js: 'resources/lib1/js/**/*.js',
+        min: 'resources/lib1/js/**/*.min.js',
       }
     }
   },
-  //paths.app.src.mdb450.scripts.min
-  app: {
+  lib2: {
     src: {
       styles: {
-        css:  'resources/app/css/**/*.css',
-        min:  'resources/app/css/app.min.css',
-        scss: 'resources/app/scss/**/*.scss'
+        css1: 'resources/lib2/css/mdb.min.css',
+        css2: 'resources/lib2/css/flipclock.css',
+        css3: 'resources/lib2/css/*.css',
+        min1: 'resources/lib2/css/mdb.min.css',
+        min2: 'resources/lib2/css/flipclock.css',
+        min3: 'resources/lib2/css/*.min.css',
       },
       scripts: {
-        js:     'resources/app/js/*.js',
-        min:    'resources/app/js/app.min.js',
-        min_lib:'resources/app/js/lib.min.js'
-      },
-      mdb450: {
-        styles: {
-          min:  'resources/app/mdb450/css/*.min.css',
-          scss: 'resources/app/mdb450/scss/**/*.scss'
-        },
-        scripts: {
-          min: 'resources/app/mdb450/js/*.min.js',
-          min_xcl1: 'resources/app/mdb450/js/jquery-3.2.1.min.js',
-          min_xcl2: 'resources/app/mdb450/js/popper.min.js'
-        }
+        js: 'resources/lib2/js/*.js',
+        min: 'resources/lib2/js/*.min.js',
       }
     }
   },
@@ -77,13 +67,12 @@ var paths = {
     src: {
       styles: {
         css: 'resources/ezz/**/*.css',
-        min: 'resources/ezz/*.min.css',
+        min: 'resources/ezz/**/*.min.css',
         scss:'resources/ezz/**/*.scss'
       },
       scripts: {
-        js:     'resources/ezz/js/*.js',
-        min:    'resources/ezz/js-min/*.min.js',
-        min_lib:'resources/ezz/js/ezh.min.js'
+        js:     'resources/ezz/js/**/*.js',
+        min:    'resources/ezz/js-min/**/*.min.js',
       },
       images: {
         img:    'resources/ezz/img/**/*.{jpg,jpeg,png}'
@@ -93,53 +82,48 @@ var paths = {
 };
 
 // copy LIB - min:  "resources/lib/css/lib.min.css",
-function copy_lib_styles() {
-  return gulp.src([ paths.lib.src.styles.min,
-                    paths.app.src.mdb450.scripts.min,
-                    '!' + paths.app.src.mdb450.scripts.min_x
-    ], {allowEmpty: true} )
+function copy_lib1_styles() {
+  return gulp.src([ paths.lib1.src.styles.min], {allowEmpty: true} )
     .pipe(strip_css_comments({ preserve: false }))
-    .pipe(concat('lib.min.css'))
+    .pipe(concat('lib1.min.css'))
     .pipe(gulp.dest(paths.styles.dest));
 }
-function copy_lib_scripts() {
-  return gulp.src([ paths.lib.src.scripts.min, 
-                    paths.app.src.mdb450.scripts.min_xcl1,  //jquery-3.2.1.min.js
-                    paths.app.src.mdb450.scripts.min_xcl2,  //popper.min.js
-                    '!' + paths.lib.src.scripts.min_lib
+function copy_lib2_styles() {
+  return gulp.src([paths.lib2.src.styles.css1,
+                   paths.lib2.src.styles.css2,
+                   paths.lib2.src.styles.css3
                   ], { allowEmpty: true })
+    .pipe(strip_css_comments({ preserve: false }))
+    .pipe(cssmin())
+    .pipe(concat('lib2.min.css'))
+    .pipe(gulp.dest(paths.styles.dest));
+}
+function copy_lib1_scripts() {
+  return gulp.src([ paths.lib1.src.scripts.min], { allowEmpty: true })
     .pipe(strip_comments({ preserve: false }))
-    .pipe(concat('lib.min.js'))
+    .pipe(concat('lib1.min.js'))
     .pipe(gulp.dest(paths.scripts.dest));
 }
-// copy APP - mdb450
-function copy_app_styles_mdb() {
-  return gulp.src([paths.app.src.mdb450.styles.min], { allowEmpty: true })
-    .pipe(strip_css_comments({ preserve: false }))
-    .pipe(concat('app.min.css'))
-    .pipe(gulp.dest(paths.styles.dest));
-}
-function copy_app_scripts_mdb() {
-  return gulp.src([paths.app.src.mdb450.scripts.min,
-          '!' + paths.app.src.mdb450.scripts.min_xcl1,  //jquery-3.2.1.min.js
-          '!' + paths.app.src.mdb450.scripts.min_xcl2   //popper.min.js
-          ], { allowEmpty: true })
+function copy_lib2_scripts() {
+  return gulp.src([paths.lib2.src.scripts.min], { allowEmpty: true })
     .pipe(strip_comments({ preserve: false }))
-    .pipe(concat('app.min.js'))
+    .pipe(concat('lib2.min.js'))
     .pipe(gulp.dest(paths.scripts.dest));
 }
 // comp&copy EZZ
 function copy_ezz_styles() {
   return gulp.src([paths.ezz.src.styles.scss], { allowEmpty: true })
+    .pipe(plumber())
     .pipe(sass({ outputStyle: 'nested' }).on('error', sass.logError))
     .pipe(autoprefixer({
       browsers: ['last 10 versions'],
       cascade: false
     }))
-    .pipe(strip_css_comments({ preserve: false }))
+    //.pipe(strip_css_comments({ preserve: false })) // что-то похоже, что комменты и без этого убираются?!
     .pipe(cssmin())
     .pipe(concat('ezz.min.css'))
     //.pipe(rename({ basename: 'ezz', suffix: '.min' }))
+    .pipe(plumber.stop())
     .pipe(gulp.dest(paths.styles.dest));
 }
 function copy_ezz_scripts() {
@@ -152,10 +136,8 @@ function copy_ezz_scripts() {
     .pipe(sourcemaps.write(".")) // For external source map file: In this case: main.min.js.map
     .pipe(gulp.dest(paths.scripts.dest));
 }
-
-function proc_images() {
-  return gulp.src(paths.ezz.src.images.img, { since: gulp.lastRun(proc_images) })
-    //.pipe(imagemin({ optimizationLevel: 5 }))
+function copy_ezz_images() {
+  return gulp.src(paths.ezz.src.images.img, { since: gulp.lastRun(copy_ezz_images) })
     .pipe(imagemin([
       imagemin.gifsicle({ interlaced: true }),
       imagemin.jpegtran({ progressive: true }),
@@ -169,7 +151,6 @@ function proc_images() {
     ]))
     .pipe(gulp.dest(paths.images.dest));
 }
-
 // Live Server - Begin
 function serve(done) {
   browserSync.init({
@@ -181,12 +162,10 @@ function serve(done) {
   });
   done();
 }
-
 function reload(done) {
   browserSync.reload();
   done();
 }
-
 function live_server() {
   return browserSync.init({
     server: {
@@ -198,41 +177,48 @@ function live_server() {
     gulp.watch("**/*", { cwd: './dist/' }, gulp.series(reload));
 }
 // Live Server - End
-
-exports.copy_app_scripts_mdb = copy_app_scripts_mdb;
-exports.copy_app_styles_mdb = copy_app_styles_mdb;
-var copy_app_mdb = gulp.series(copy_app_scripts_mdb, copy_app_styles_mdb);
-exports.copy_lib_scripts = copy_lib_scripts;
-exports.copy_lib_styles = copy_lib_styles;
-var copy_lib = gulp.series(copy_lib_scripts, copy_lib_styles);
-exports.copy_ezz_scripts = copy_ezz_scripts;
+/* --------------------------------------------------- */
+exports.copy_lib1_styles = copy_lib1_styles;
+exports.copy_lib2_styles = copy_lib2_styles;
+exports.copy_lib1_scripts = copy_lib1_scripts;
+exports.copy_lib2_scripts = copy_lib2_scripts;
 exports.copy_ezz_styles = copy_ezz_styles;
-var copy_ezz = gulp.series(copy_ezz_scripts, copy_ezz_styles);
-exports.proc_images = proc_images;
-var proc_images = gulp.series(proc_images);
-
-gulp.task('copy_app_mdb', copy_app_mdb);
-gulp.task('copy_lib', copy_lib);
+exports.copy_ezz_scripts = copy_ezz_scripts;
+exports.copy_ezz_images = copy_ezz_images;
+/* --------------------------------------------------- */
+var copy_lib1 = gulp.series(copy_lib1_styles, copy_lib1_scripts);
+var copy_lib2 = gulp.series(copy_lib2_styles, copy_lib2_scripts);
+var copy_ezz  = gulp.series(copy_ezz_styles, copy_ezz_scripts);
+var copy_img  = gulp.series(copy_ezz_images);
+/* --------------------------------------------------- */
+gulp.task('copy_lib1', copy_lib1);
+gulp.task('copy_lib2', copy_lib2);
 gulp.task('copy_ezz', copy_ezz);
-gulp.task('proc_images', proc_images);
-
+gulp.task('copy_img', copy_img);
+/* --------------------------------------------------- */
 function watch_ezz() {
   gulp.watch(paths.ezz.src.styles.scss, gulp.series(copy_ezz_styles, reload));
   gulp.watch(paths.ezz.src.scripts.js, gulp.series(copy_ezz_scripts, reload));
-  gulp.watch(paths.ezz.src.images.img, gulp.series(proc_images, reload));
+  gulp.watch(paths.ezz.src.images.img, gulp.series(copy_img, reload));
   gulp.watch("./dist/*.html").on("change", browserSync.reload);
 }
 var go_ezz = gulp.series(serve, watch_ezz);
-gulp.task('go_ezz', go_ezz);
-
+/* --------------------------------------------------- */
 var build_all = gulp.series(
-  copy_app_scripts_mdb, copy_app_styles_mdb,
-  copy_lib_scripts, copy_lib_styles,
-  copy_ezz_scripts, copy_ezz_styles,
-  proc_images
+  copy_lib1_styles, copy_lib1_scripts,
+  copy_lib2_styles, copy_lib2_scripts,
+  copy_ezz_styles, copy_ezz_scripts
 );
+var build_alli = gulp.series(
+  copy_lib1_styles, copy_lib1_scripts,
+  copy_lib2_styles, copy_lib2_scripts,
+  copy_ezz_styles, copy_ezz_scripts,
+  copy_img
+);
+/* --------------------------------------------------- */
+gulp.task('go_ezz', go_ezz);
 gulp.task('build_all', build_all);
-
+gulp.task('build_alli', build_alli);
 /*
  * Define default task that can be called by just running `gulp` from cli
  */

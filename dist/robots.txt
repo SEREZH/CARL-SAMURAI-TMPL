@@ -1,0 +1,16 @@
+Sitemap: https://zapchasti40.ru//sitemap.xml
+User-agent: *
+Host: https://www.zapchasti40.ru
+Disallow: /css
+Disallow: /sass
+Disallow: /mdb-addons
+Disallow: /js
+Disallow: /php
+Disallow: /images/
+Disallow: /lib
+Disallow: /log
+Disallow: /font
+Disallow: /dist
+Disallow: /templates
+Disallow: /cgi-bin
+
