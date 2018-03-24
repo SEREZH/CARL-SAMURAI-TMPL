@@ -1,3 +1,10 @@
+
+//gulp-php-minify
+//gulp-about
+//gulp-as-css-imports
+//gulp-base64-img
+//gulp-concat-folders
+
 var gulp = require('gulp');
 var htmlmin = require('gulp-htmlmin');
 var htmlhint = require("gulp-htmlhint");
@@ -19,6 +26,8 @@ var del = require('del');
 var plumber = require('gulp-plumber');
 var plumberNotifier = require('gulp-plumber-notifier');
 var browserSync = require('browser-sync').create();
+
+var debug = require('gulp-debug');
 
 //paths.styles.dest
 //paths.scripts.dest
@@ -84,8 +93,10 @@ var paths = {
 // copy LIB - min:  "resources/lib/css/lib.min.css",
 function copy_lib1_styles() {
   return gulp.src([ paths.lib1.src.styles.min], {allowEmpty: true} )
+    .pipe(debug({ title: 'src' }))
     .pipe(strip_css_comments({ preserve: false }))
     .pipe(concat('lib1.min.css'))
+    .pipe(debug({ title: 'concat' }))
     .pipe(gulp.dest(paths.styles.dest));
 }
 function copy_lib2_styles() {
@@ -93,28 +104,36 @@ function copy_lib2_styles() {
                    paths.lib2.src.styles.css2,
                    paths.lib2.src.styles.css3
                   ], { allowEmpty: true })
+    .pipe(debug({ title: 'src' }))              
     .pipe(strip_css_comments({ preserve: false }))
     .pipe(cssmin())
     .pipe(concat('lib2.min.css'))
+    .pipe(debug({ title: 'concat' }))
     .pipe(gulp.dest(paths.styles.dest));
 }
 function copy_lib1_scripts() {
   return gulp.src([ paths.lib1.src.scripts.min], { allowEmpty: true })
+    .pipe(debug({ title: 'src' }))                
     .pipe(strip_comments({ preserve: false }))
     .pipe(concat('lib1.min.js'))
+    .pipe(debug({ title: 'concat' }))
     .pipe(gulp.dest(paths.scripts.dest));
 }
 function copy_lib2_scripts() {
   return gulp.src([paths.lib2.src.scripts.min], { allowEmpty: true })
+    .pipe(debug({ title: 'src' }))              
     .pipe(strip_comments({ preserve: false }))
     .pipe(concat('lib2.min.js'))
+    .pipe(debug({ title: 'concat' }))
     .pipe(gulp.dest(paths.scripts.dest));
 }
 // comp&copy EZZ
 function copy_ezz_styles() {
   return gulp.src([paths.ezz.src.styles.scss], { allowEmpty: true })
+    .pipe(debug({ title: 'src' }))              
     .pipe(plumber())
     .pipe(sass({ outputStyle: 'nested' }).on('error', sass.logError))
+    .pipe(debug({ title: 'sass' }))              
     .pipe(autoprefixer({
       browsers: ['last 10 versions'],
       cascade: false
@@ -122,22 +141,26 @@ function copy_ezz_styles() {
     //.pipe(strip_css_comments({ preserve: false })) // что-то похоже, что комменты и без этого убираются?!
     .pipe(cssmin())
     .pipe(concat('ezz.min.css'))
+    .pipe(debug({ title: 'concat' }))              
     //.pipe(rename({ basename: 'ezz', suffix: '.min' }))
     .pipe(plumber.stop())
     .pipe(gulp.dest(paths.styles.dest));
 }
 function copy_ezz_scripts() {
   return gulp.src([paths.ezz.src.scripts.js], { allowEmpty: true })
+    .pipe(debug({ title: 'src' }))              
     .pipe(sourcemaps.init())
     .pipe(strip_comments({ preserve: false }))
     .pipe(babel({ presets: ['es2015'] }))
     .pipe(uglify())
     .pipe(concat('ezz.min.js'))
+    .pipe(debug({ title: 'concat' }))              
     .pipe(sourcemaps.write(".")) // For external source map file: In this case: main.min.js.map
     .pipe(gulp.dest(paths.scripts.dest));
 }
 function copy_ezz_images() {
   return gulp.src(paths.ezz.src.images.img, { since: gulp.lastRun(copy_ezz_images) })
+    .pipe(debug({ title: 'src' }))              
     .pipe(imagemin([
       imagemin.gifsicle({ interlaced: true }),
       imagemin.jpegtran({ progressive: true }),
@@ -148,6 +171,7 @@ function copy_ezz_images() {
           { cleanupIDs: false }
         ]
       })
+      .pipe(debug({ title: 'imagemin' }))              
     ]))
     .pipe(gulp.dest(paths.images.dest));
 }
