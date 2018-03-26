@@ -1,4 +1,6 @@
 /node_modules
 /resources
+/vid
 npm-debug.log
 package-lock.json
+dist/vid/636795321-Cars On Highway.mp4

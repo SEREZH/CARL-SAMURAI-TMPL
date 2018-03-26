@@ -4,6 +4,15 @@
 //gulp-as-css-imports
 //gulp-base64-img
 //gulp-concat-folders
+//gulp-deploy-git
+//gulp-exif
+//gulp-filelist
+//gulp-ftp
+//gulp-gulp
+//gulp-if
+//gulp-ignore
+//gulp-micromatch
+//gulp-pretty-url
 
 var gulp = require('gulp');
 var htmlmin = require('gulp-htmlmin');
@@ -178,11 +187,19 @@ function copy_ezz_images() {
 // Live Server - Begin
 function serve(done) {
   browserSync.init({
-    server: {
+    /* server: {
       baseDir: "./dist",
-      index: "index.html"
-    },
-    ghostMode: false
+      index: "index.php"
+    }, 
+    ghostMode: false, */
+   
+    proxy: 'http://carl-samurai.tmpl/',
+    host: 'carl-samurai.tmpl',
+    open: 'external',
+
+    baseDir: "./dist",
+
+    notify: false
   });
   done();
 }
@@ -192,11 +209,19 @@ function reload(done) {
 }
 function live_server() {
   return browserSync.init({
-    server: {
+    /* server: {
       baseDir: "./dist",
       directory: true
-    },
+    }, */
+    /* notify: false */
+    proxy: 'http://carl-samurai.tmpl/',
+    host: 'carl-samurai.tmpl',
+    open: 'external',
+
+    baseDir: "./dist",
+
     notify: false
+
   }),
     gulp.watch("**/*", { cwd: './dist/' }, gulp.series(reload));
 }
@@ -225,6 +250,7 @@ function watch_ezz() {
   gulp.watch(paths.ezz.src.scripts.js, gulp.series(copy_ezz_scripts, reload));
   gulp.watch(paths.ezz.src.images.img, gulp.series(copy_img, reload));
   gulp.watch("./dist/*.html").on("change", browserSync.reload);
+  gulp.watch("./dist/**/*.php").on("change", browserSync.reload);
 }
 var go_ezz = gulp.series(serve, watch_ezz);
 /* --------------------------------------------------- */
